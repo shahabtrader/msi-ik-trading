@@ -1,7 +1,7 @@
 """
-ShahabPrime Quant Dashboard - SIMPLIFIED
-==========================================
-A real-time market microstructure dashboard for crypto (Binance, via ccxt).
+ShahabPrime Quant Dashboard - BYBIT VERSION
+==============================================
+A real-time market microstructure dashboard for crypto (Bybit, via ccxt).
 Fixed for Streamlit Cloud deployment.
 """
 
@@ -35,7 +35,7 @@ st.markdown(
 )
 
 st.title("📊 ShahabPrime — Quant Trading Dashboard")
-st.caption("Real-time market microstructure for crypto, via ccxt/Binance. Educational tool — not financial advice.")
+st.caption("Real-time market microstructure for crypto, via Bybit. Educational tool — not financial advice.")
 
 # SIDEBAR CONTROLS
 with st.sidebar:
@@ -43,12 +43,20 @@ with st.sidebar:
     symbol = st.text_input("Symbol (e.g., BTC/USDT)", value="BTC/USDT")
     refresh_enabled = st.checkbox("Auto-refresh enabled", value=False)
 
-# CACHE & EXCHANGE
+# CACHE & EXCHANGE - BYBIT
 @st.cache_resource
 def get_exchange():
-    return ccxt.binance({"enableRateLimit": True})
+    try:
+        return ccxt.bybit({"enableRateLimit": True})
+    except Exception as e:
+        st.error(f"Failed to initialize Bybit: {e}")
+        return None
 
 exchange = get_exchange()
+
+if exchange is None:
+    st.error("❌ Could not connect to Bybit")
+    st.stop()
 
 # SESSION STATE
 if "trade_buffer" not in st.session_state:
@@ -60,7 +68,7 @@ if "cvd_running" not in st.session_state:
 
 # DATA FETCHERS
 def fetch_order_book(sym, limit=20):
-    """Fetch order book safely"""
+    """Fetch order book from Bybit safely"""
     try:
         return exchange.fetch_order_book(sym, limit=limit)
     except Exception as e:
@@ -68,7 +76,7 @@ def fetch_order_book(sym, limit=20):
         return None
 
 def fetch_ticker(sym):
-    """Fetch ticker info safely"""
+    """Fetch ticker info from Bybit safely"""
     try:
         return exchange.fetch_ticker(sym)
     except Exception as e:
@@ -76,7 +84,7 @@ def fetch_ticker(sym):
         return None
 
 def fetch_recent_trades(sym, limit=100):
-    """Fetch recent trades safely"""
+    """Fetch recent trades from Bybit safely"""
     try:
         return exchange.fetch_trades(sym, limit=limit)
     except Exception as e:
@@ -158,7 +166,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs(
     ["📖 Order Book", "🌡️ VPIN", "💰 CVD", "🎯 Kelly", "🪙 Ticker"]
 )
 
-# Fetch data
+# Fetch data from Bybit
 order_book = fetch_order_book(symbol)
 ticker = fetch_ticker(symbol)
 recent_trades = fetch_recent_trades(symbol, limit=100)
@@ -264,7 +272,7 @@ with tab4:
 
 # ---- TAB 5: TICKER ----
 with tab5:
-    st.subheader(f"Ticker Info for {symbol}")
+    st.subheader(f"Ticker Info for {symbol} (Bybit)")
     if ticker:
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("Price", f"${ticker.get('last', 0):.2f}")
@@ -278,7 +286,7 @@ with tab5:
         st.warning("Ticker data unavailable")
 
 st.divider()
-st.caption("Data: Binance via ccxt | Real-time microstructure analysis | Not financial advice")
+st.caption("Data: Bybit via ccxt | Real-time microstructure analysis | Not financial advice")
 st.caption("⚠️ DISCLAIMER: This is an educational tool only. Always DYOR. Never trade with money you can't afford to lose.")
 
 if refresh_enabled:
