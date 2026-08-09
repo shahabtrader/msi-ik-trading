@@ -1,0 +1,15 @@
+[theme]
+primaryColor = "#00ffa3"
+backgroundColor = "#05070c"
+secondaryBackgroundColor = "#1a1f2e"
+textColor = "#ffffff"
+font = "sans serif"
+
+[client]
+showErrorDetails = true
+theme = "dark"
+
+[server]
+headless = true
+port = 8501
+enableXsrfProtection = true
